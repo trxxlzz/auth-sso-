@@ -7,7 +7,6 @@ on:
        description: 'Tag to deploy'
        required: true
 
-
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -36,6 +35,9 @@ jobs:
         run: |
           go mod download
           go build -o grpc-auth ./cmd/sso
+      - name: Build migrator
+        run: |
+          go build -o migrator ./cmd/migrator
       - name: Deploy to VM
         run: |
           sudo apt-get install -y ssh rsync
@@ -43,26 +45,23 @@ jobs:
           chmod 600 deploy_key.pem
           ssh -i deploy_key.pem -o StrictHostKeyChecking=no ${{ env.HOST }} "mkdir -p ${{ env.DEPLOY_DIRECTORY }}"
           rsync -avz -e 'ssh -i deploy_key.pem -o StrictHostKeyChecking=no' --exclude='.git' ./ ${{ env.HOST }}:${{ env.DEPLOY_DIRECTORY }}
+          rsync -avz -e 'ssh -i deploy_key.pem -o StrictHostKeyChecking=no' ./migrator ${{ env.HOST }}:${{ enx.DEPLOY_DIRECTORY }}/migrator
         env:
           DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
       - name: Remove old systemd service file
         run: |
-          ssh -i deploy_key.pem -o StrictHostKeyChecking=no ${{ env.HOST }} "rm -f /etc/systemd/system/url-shortener.service"
+          ssh -i deploy_key.pem -o StrictHostKeyChecking=no ${{ env.HOST }} "rm -f /etc/systemd/system/grpc-auth.service"
       - name: List workspace contents
         run: |
           echo "Listing deployment folder contents:"
           ls -la ${{ github.workspace }}/deployment
-      - name: Create environment file on server
-        run: |
-          ssh -i deploy_key.pem -o StrictHostKeyChecking=no ${{ env.HOST }} "\
-          touch ${{ env.ENV_FILE_PATH }} && \
-          chmod 600 ${{ env.ENV_FILE_PATH }} && \
-          echo 'CONFIG_PATH=${{ env.CONFIG_PATH }}' > ${{ env.ENV_FILE_PATH }} && \
-          echo 'HTTP_SERVER_PASSWORD=${{ secrets.AUTH_PASS }}' >> ${{ env.ENV_FILE_PATH }}"
       - name: Copy systemd service file
         run: |
           scp -i deploy_key.pem -o StrictHostKeyChecking=no ${{ github.workspace }}/deployment/url-shortener.service ${{ env.HOST }}:/tmp/url-shortener.service
           ssh -i deploy_key.pem -o StrictHostKeyChecking=no ${{ env.HOST }} "mv /tmp/url-shortener.service /etc/systemd/system/url-shortener.service"
+      - name: Run migrations
+        run: |
+          ssh -i deploy_key.pem -o StrictHostKeyChecking=no ${{ env.HOST }} "${{ env.DEPLOY_DIRECTORY}}/migrator --storage-path=${{ env.DEPLOY_DIRECTORY }}/sso.db --migtations-path=${{ env.DEPLOY_DIRECTORY }}/migrations"
       - name: Start application
         run: |
           ssh -i deploy_key.pem -o StrictHostKeyChecking=no ${{ env.HOST }} "systemctl daemon-reload && systemctl restart url-shortener.service"
