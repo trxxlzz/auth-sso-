@@ -1,0 +1,30 @@
+# Бинарные файлы и временные артефакты
+/myapp
+*.exe
+*.out
+*.log
+*.tmp
+*.swp
+
+# Кэш модулей Go
+/pkg/
+*.test
+
+# Кэш IDE
+.idea/
+.vscode/
+*.iml
+
+# Файлы зависимостей (Go modules)
+vendor/
+go.sum
+
+# Переменные окружения и конфиги
+.env
+.env.local
+config.yaml
+secrets.json
+
+# Docker файлы (если используешь Docker)
+docker-compose.override.yml
+/storage/
