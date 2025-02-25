@@ -61,11 +61,11 @@ jobs:
           ls -la ${{ github.workspace }}/deployment
       - name: Copy systemd service file
         run: |
-          scp -i deploy_key.pem -o StrictHostKeyChecking=no ${{ github.workspace }}/deployment/url-shortener.service ${{ env.HOST }}:/tmp/url-shortener.service
-          ssh -i deploy_key.pem -o StrictHostKeyChecking=no ${{ env.HOST }} "mv /tmp/url-shortener.service /etc/systemd/system/url-shortener.service"
+          scp -i deploy_key.pem -o StrictHostKeyChecking=no ${{ github.workspace }}/deployment/grpc-auth.service ${{ env.HOST }}:/tmp/grpc-auth.service
+          ssh -i deploy_key.pem -o StrictHostKeyChecking=no ${{ env.HOST }} "mv /tmp/grpc-auth.service /etc/systemd/system/grpc-auth.service"
       - name: Run migrations
         run: |
           ssh -i deploy_key.pem -o StrictHostKeyChecking=no ${{ env.HOST }} "${{ env.DEPLOY_DIRECTORY}}/migrator --storage-path=${{ env.DEPLOY_DIRECTORY }}/sso.db --migtations-path=${{ env.DEPLOY_DIRECTORY }}/migrations"
       - name: Start application
         run: |
-          ssh -i deploy_key.pem -o StrictHostKeyChecking=no ${{ env.HOST }} "systemctl daemon-reload && systemctl restart url-shortener.service"
+          ssh -i deploy_key.pem -o StrictHostKeyChecking=no ${{ env.HOST }} "systemctl daemon-reload && systemctl restart grpc-auth.service"
