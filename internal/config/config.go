@@ -8,10 +8,12 @@ import (
 )
 
 type Config struct {
-	Env          string        `yaml:"env" env-default:"local"`
-	Storage_path string        `yaml:"storage_path" env-required:"true"`
-	TokenTTl     time.Duration `yaml:"token_ttl" env-required:"true"`
-	GRPC         GRPCConfig    `yaml:"grpc"`
+	Env            string        `yaml:"env" env-default:"local"`
+	StoragePath    string        `yaml:"storage_path" env-required:"true"`
+	TokenTTl       time.Duration `yaml:"token_ttl" env-required:"true"`
+	GRPC           GRPCConfig    `yaml:"grpc"`
+	MigrationsPath string
+	TokenTTL       time.Duration `yaml:"token_ttl" env-default:"1h"`
 }
 
 type GRPCConfig struct {
