@@ -20,9 +20,7 @@ vendor/
 go.sum
 
 # Переменные окружения и конфиги
-.env
-.env.local
-config.yaml
+
 secrets.json
 
 # Docker файлы (если используешь Docker)
