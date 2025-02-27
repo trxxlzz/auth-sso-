@@ -4,7 +4,6 @@ import (
 	"auth-sso/internal/app"
 	_ "auth-sso/internal/app/grpc"
 	"auth-sso/internal/config"
-	"fmt"
 	"log/slog"
 	"os"
 	"os/signal"
@@ -20,13 +19,11 @@ const (
 func main() {
 	cfg := config.MustLoad()
 
-	fmt.Println(cfg)
-
 	log := SetupLogger(cfg.Env)
 
 	log.Info("starting application")
 
-	application := app.New(log, cfg.GRPC.Port, cfg.Storage_path, cfg.TokenTTl)
+	application := app.New(log, cfg.GRPC.Port, cfg.StoragePath, cfg.TokenTTL)
 
 	go application.GRPCSrv.MustRun()
 

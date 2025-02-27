@@ -8,10 +8,9 @@ import (
 )
 
 type Config struct {
-	Env            string        `yaml:"env" env-default:"local"`
-	StoragePath    string        `yaml:"storage_path" env-required:"true"`
-	TokenTTl       time.Duration `yaml:"token_ttl" env-required:"true"`
-	GRPC           GRPCConfig    `yaml:"grpc"`
+	Env            string     `yaml:"env" env-default:"local"`
+	StoragePath    string     `yaml:"storage_path" env-required:"true"`
+	GRPC           GRPCConfig `yaml:"grpc"`
 	MigrationsPath string
 	TokenTTL       time.Duration `yaml:"token_ttl" env-default:"1h"`
 }
@@ -22,18 +21,17 @@ type GRPCConfig struct {
 }
 
 func MustLoad() *Config {
-	path := fetchConfigPath()
-	if path == "" {
-		panic("config file path is empty")
+	configPath := fetchConfigPath()
+	if configPath == "" {
+		panic("config path is empty")
 	}
 
-	return MustLoadByPath(path)
+	return MustLoadPath(configPath)
 }
 
-func MustLoadByPath(configPath string) *Config {
-
+func MustLoadPath(configPath string) *Config {
 	if _, err := os.Stat(configPath); os.IsNotExist(err) {
-		panic("config file does not exist")
+		panic("config file does not exist: " + configPath)
 	}
 
 	var cfg Config
@@ -48,7 +46,7 @@ func MustLoadByPath(configPath string) *Config {
 func fetchConfigPath() string {
 	var res string
 
-	flag.StringVar(&res, "config", "", "config file path")
+	flag.StringVar(&res, "config", "", "path to config file")
 	flag.Parse()
 
 	if res == "" {
